@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@moncompte · TikTok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #000000;
+    --card: #a7a7a7;
+    --border: rgba(255,255,255,0.08);
+    --text: #000000;
+    --muted: #888;
+    --accent: #db264d;
+    --accent2: #a317b9;
+    --font-title: 'Syne', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-title);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ========== NAV ========== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(248, 246, 246, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+  }
+  .nav-logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    cursor: pointer;
+  }
+  .nav-icons { display: flex; gap: 20px; align-items: center; }
+  .nav-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.5s;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .nav-icon:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ========== PAGES ========== */
+  .page { display: none; animation: fadeIn 0.25s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ========== PROFILE PAGE ========== */
+  .profile-header {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 20px 0;
+  }
+  .profile-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #ff9a3c, var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -2px;
+    position: relative;
+    z-index: 1;
+  }
+  .avatar-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    z-index: 0;
+    animation: spin 4s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .avatar-ring::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--bg);
+  }
+
+  .profile-info { flex: 1; }
+  .profile-handle {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 2px;
+  }
+  .profile-name {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 12px;
+  }
+  .follow-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 28px;
+    font-family: var(--font-title);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .follow-btn:hover { opacity: 0.88; }
+  .follow-btn:active { transform: scale(0.97); }
+
+  .stats {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 16px;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-size: 18px;
+    font-weight: 800;
+    display: block;
+    letter-spacing: -0.5px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .bio {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 6px;
+    max-width: 420px;
+  }
+  .bio-link {
+    font-size: 13px;
+    color: var(--accent2);
+    font-family: var(--font-mono);
+    cursor: pointer;
+  }
+
+  /* ========== TABS ========== */
+  .tabs {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-top: 20px;
+    padding: 0 20px;
+  }
+  .tab {
+    padding: 12px 24px 11px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+  .tab:hover { color: var(--text); }
+
+  /* ========== GRID ========== */
+  .grid-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 4px 20px 60px;
+  }
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .video-card {
+    position: relative;
+    aspect-ratio: 9/16;
+    background: var(--card);
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 0;
+    transition: transform 0.2s;
+  }
+  .video-card:hover { transform: scale(0.97); z-index: 2; }
+  .video-card:hover .card-overlay { opacity: 1; }
+
+  .card-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-bg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 800;
+  }
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .card-play {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-play::after {
+    content: '';
+    border-left: 14px solid white;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    margin-left: 3px;
+  }
+  .card-views {
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    font-family: var(--font-mono);
+  }
+
+  .card-views-bottom {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    font-family: var(--font-mono);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+  .card-views-bottom::before { content: '▶'; font-size: 9px; }
+
+  .card-pinned {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: var(--accent);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+  }
+
+  /* ========== ARTICLE PAGE ========== */
+  #article-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  .article-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    transition: color 0.2s;
+    width: fit-content;
+  }
+  .article-back:hover { color: var(--text); }
+  .article-back::before {
+    content: '←';
+    font-size: 16px;
+  }
+
+  .article-video-frame {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 9/16;
+    margin: 0 auto 32px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    display: block;
+  }
+  .article-video-frame .card-bg {
+    border-radius: 0;
+    font-size: 56px;
+  }
+  .video-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    padding: 40px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: white;
+    width: 38%;
+    border-radius: 2px;
+  }
+  .video-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .vid-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  .vid-btn:hover { background: rgba(255,255,255,0.3); }
+  .vid-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .article-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent2);
+    background: rgba(37,244,238,0.08);
+    border: 1px solid rgba(37,244,238,0.2);
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+  }
+
+  .article-title {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+  }
+
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+  }
+  .meta-text { flex: 1; }
+  .meta-author {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .meta-date {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .meta-stats {
+    display: flex;
+    gap: 12px;
+  }
+  .meta-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .article-body {
+    font-size: 15px;
+    line-height: 1.75;
+    color: rgba(0, 0, 0, 0.88);
+  }
+  .article-body p { margin-bottom: 18px; }
+  .article-body h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 28px 0 12px;
+    letter-spacing: -0.4px;
+  }
+  .article-body strong { color: var(--text); font-weight: 700; }
+  .article-body .highlight {
+    background: rgba(254,44,85,0.12);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 20px 0;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .share-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .share-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(#f6f4f3);
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    text-align: center;
+  }
+  .share-btn:hover { border-color: var(--accent); background: rgba(254,44,85,0.08); }
+  .share-btn.primary { background: var(--accent); border-color: var(--accent); }
+  .share-btn.primary:hover { opacity: 0.88; }
+
+  /* ========== GRADIENTS for cards ========== */
+  .grad-1 { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460, #533483); }
+  .grad-2 { background: linear-gradient(135deg, #2d1b69, #11998e, #38ef7d); }
+  .grad-3 { background: linear-gradient(135deg, #c94b4b, #4b134f); }
+  .grad-4 { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); }
+  .grad-5 { background: linear-gradient(135deg, #1a1a1a, #2d2d2d, #3d3d3d); }
+  .grad-6 { background: linear-gradient(135deg, #134e5e, #71b280); }
+  .grad-7 { background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b); }
+  .grad-8 { background: linear-gradient(135deg, #232526, #414345); }
+  .grad-9 { background: linear-gradient(135deg, #0d0d0d, #1a0a2e, #2d0a4e); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="goHome()">TikTok</div>
+  <div class="nav-icons">
+    <div class="nav-icon">🔍</div>
+    <div class="nav-icon">📬</div>
+    <div class="nav-icon">👤</div>
+  </div>
+</nav>
+
+<!-- ===== PROFILE PAGE ===== -->
+<div id="profile-page" class="page active">
+  <div class="profile-header">
+    <div class="profile-top">
+      <div class="avatar-wrap">
+        <div class="avatar-ring"></div>
+        <div class="avatar" style="position:relative;z-index:1;"> </div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-handle">@What_is_a_trend?</div>
+        <div class="profile-name">Julien Arsena · Miyu Goto · Naïs Noël · Assya Faradji</div>
+        <button class="follow-btn">Follow</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-num">123</span><span class="stat-label">following</span></div>
+      <div class="stat"><span class="stat-num">6,7k</span><span class="stat-label">followers</span></div>
+      <div class="stat"><span class="stat-num">911k</span><span class="stat-label">likes</span></div>
+    </div>
+    <p class="bio">✍️ Click on the TikTok to access the article...</p>
+    <div class="bio-link"></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">Vidéos</div>
+    <div class="tab">Favoris</div>
+    <div class="tab">Aimés</div>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="video-grid" id="video-grid"></div>
+  </div>
+</div>
+
+<!-- ===== ARTICLE PAGE ===== -->
+<div id="article-page" class="page">
+  <div class="article-back" onclick="goHome()">Retour au profil</div>
+  <div id="article-content"></div>
+</div>
+
+<script>
+const videos = [
+  {
+    id: 1,
+    emoji: "🤖",
+    image : 'images/1.jpeg',
+    grad: "grad-1",
+    views: "2,1M",
+    pinned: true,
+    tags: ["#Socialmedia", "#TikTok"],
+    title: "What is a trend?",
+    date: "14 mars 2025",
+    readTime: "8 min",
+    likes: "47k",
+    comments: "1,2k",
+    body: `<p>A trend can be multiple things, but here we’ll focus on social media trends. A trend is something that becomes popular during a certain period of time and is followed by a large number of people. Trends can exist in many areas such as fashion, music, technology, or lifestyle. For example, fashion trends often appear in magazines, runway shows, or through celebrities and influencers who influence the way people dress or behave. It bet you've been all influenced by The devil wears Prada 2 ! </p>
+    <p>Today, social media plays a major role in the creation and spread of trends. Platforms such as TikTok, Instagram, and X can make a video, a song, a challenge, or even a sentence become viral in only a few hours. Social media trends include dance challenges, memes, viral sounds, beauty routines, fashion aesthetics, or internet slang. Examples include the “clean girl” aesthetic, TikTok dance challenges, AI generated videos, or brain rot content made of repetitive and addictive short videos like the 67 trend.</p>`
+  },
+  {
+    id: 2,
+    emoji: "🌍",
+    image : 'images/2.jpeg',
+    grad: "grad-2",
+    views: "890k",
+    pinned: false,
+    tags: ["#Fashion", "#Tulip"],
+    title: "Were there trends before the internet ? ",
+    date: "2 avril 2025",
+    readTime: "6 min",
+    likes: "23k",
+    comments: "654",
+    body: `<p>If we are only focusing on the meaning of the word trend applied to the world of social media, its definition can be seen from a much more ancient perspective. The Oxford Language gives us a simple definition, a trend can be explained as “a fashion” which is quite revelatory. The notion of trend, in time, expands to the notion of a movement followed by a large number of persons. We can identify “trends” that mimic the similar schemes that today trends use : a rapid and exponential fame that ultimately results in a rapid abandonment of the given fashion.</p>
+    <p>Fashion is extremely visible in the way it evolves from designers' general ideas to the catwalks and in-store sales, which allows us to see the unbelievable power of trends within the industry. A trend evolves as follows: from an individual exploring a new way of dressing, to a social group accepting this way, to the fashion catwalks, and further to brick-and-mortar and online stores as an offer for customers, finally ending up being worn in the streets. </p>
+    <p>One famous example of a trend that existed before the internet, and that does not come from the fashion industry, is tulip mania. Tulip Mania (Tulipomania) occurred in Holland during the Dutch Golden Age and has long been considered the first recorded speculative or asset bubble.</p>
+    <p>When the tulip was introduced, it immediately became a popular status symbol for the wealthy and the growing middle class. However, the flowers were fragile and it took years for flowers to grow from a seed. After it was discovered that the flower could be grown faster from a bulb, the bulbs became highly coveted. Speculation drove the value of tulip bulbs to extremes, with amounts evaluated to be similar to the price of a house today, and in 1634, tulip mania swept through the country. After a few years the frenzy died down, and by February 1637, prices began to decline. By 1638 prices leveled off. </p>
+    <p>Therefore, it is easy to say that trends, from the Tulip Mania in the 17th to the 20th century fashion, have always existed.</p>`
+  },
+  {
+    id: 3,
+    emoji: "🧠",
+    image : 'images/3.jpeg',
+    grad: "grad-4",
+    views: "1,2M",
+    pinned: false,
+    tags: ["#Psycho", "#Social"],
+    title: "Why are trends so addictive",
+    date: "5 mai 2025",
+    readTime: "7 min",
+    likes: "34k",
+    comments: "987",
+    body: `<p>To understand why trends are so addictive, we need to understand human behavior at its core. The reasons why a trend stick might seem random, simple coincidences. In reality, human psychology plays a major part in this understanding. We, humans, are built to connect, to mirror, to belong because we are a social species. Behind every trend lies the concept of social proof, the idea that we look to others to guide our behaviour, especially when we’re unsure. The feeling of having someone to look to to get inspiration is crucial to feel accepted in a community. Therefore, there is a sense of urgency when trends start to appear everywhere, the fear of missing out, because trends exist for such a short period of time that not following them could eventually make you always outside of the group. The feeling of being included can be compared to the dopamine boost that we get when we scroll, we always want more.</p>`
+  },
+  {
+    id: 4,
+    emoji: "🚀",
+    image : 'images/4.jpeg',
+    grad: "grad-6",
+    views: "560k",
+    pinned: false,
+    tags: ["#Shortlived", "#Psychology"],
+    title: "Why are trends short-lived?",
+    date: "22 janvier 2025",
+    readTime: "9 min",
+    likes: "18k",
+    comments: "445",
+    body: `<figure style="margin:20px 0;">
+              <img src="images/Rise-Fall-of-Trends-1-2-1024x576.png" style="width:100%; border-radius:8px; margin:20px 0;">
+              <figcaption style="font-size:12px; color:#888; margin-top:6px; text-align:center;">The modern trend cycle, accelerated by digital culture. Source : ASCJCapstone </figcaption>
+          </figure>
+    <p>Trends don't last long today because human psychology naturally wants two opposite things at the same time: we want to fit in and belong to a group, but we also want to be unique. When a new trend starts on social media, in fashion, or even in the economy, it feels cool, exclusive, and fresh. However, because of modern algorithms and ultra-fast production cycles, everyone copies it almost instantly. According to data from the United Nations Environment Programme (UNEP), the average consumer today buys 60% more clothes than twenty years ago, but keeps them for only half as long. This proves that the lifecycle of any trend has collapsed. Very quickly, the trend is everywhere, it loses its "cool factor," and people get bored of it. To keep making money and keeping users hooked, companies and social media platforms immediately create the next trend, and the endless cycle starts all over again. </p>`
+  },
+  {
+    id: 5,
+    emoji: "🎮",
+    image : 'images/5.jpeg',
+    grad: "grad-7",
+    views: "4,2M",
+    pinned: false,
+    tags: ["#Prediction", "#Analysis"],
+    title: "Which factors predict the best, the success of a TikTok video ?",
+    date: "10 mars 2025",
+    readTime: "5 min",
+    likes: "112k",
+    comments: "5,6k",
+    body: `<h2>Introduction</h2>
+    <p>Why certain videos and not others ? A question we all at a given time asked ourselves concerning trends or successful videos in general. So to better understand our subject and see it by our own ways, we decided to analyse raw data which describe a few features of a TikTok. And more particularly which of those features were key predictors of the number of likes on a TikTok video. </p>
+    <h2>Data Used</h2>
+    <p>The dataset used comes from Kaggle  <a href="https://www.kaggle.com/datasets/erikvdven/tiktok-trending-december-2020" target="_blank">https://www.kaggle.com/datasets/erikvdven/tiktok-trending-december-2020</a> ,it contains a wealth of information on scrapped TikToks : their number of view, as well as the popularity of the song played in it, their publication date. Then a second CSV coming from the same page was used to add specific variables on trendy spotify songs used in TikToks (N = 1000). </p>
+    <figure style="margin:20px 0;">
+      <img src="images/distrib likes.png" style="width:100%; border-radius:8px; margin:20px 0;">
+      <figcaption style="font-size:12px; color:#888; margin-top:6px; text-align:center;">Figure 1 – Monovariate description of the dependent variable: (a) Number of likes on TikTok ; (b) Log distribution of the number of likes on TikTok.</figcaption>
+    </figure>
+    <h2>Method for the analysis</h2>
+    <p>gWe firstly created 54 new variables. We created 1 new variable which gives the number of emoji in the description. Then 50 others, by onehotencoding the top 50 hashtags. Finally, we created 3 variables based on the variable “album.release_date” giving us the day, month, and years of the release date of an album.</p>
+    <p>It should be noted that for this study, we choose not to use the numbers of plays, comments or shares since these variables are known to be very correlated to the number of likes itself. We then standardized the features and separated the data into a training set (75%) and testing set (25%).</p>
+    <p>We finally built and evaluated four regression models, using scikit learn python3 library: </p>
+    <p> - Linear regression </p>
+    <p> - LASSO regression (5-fold cross-validated for 50 fits, 1 / λ ∈ [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 1.5, 10, 100]).</p>
+    <p> - Neural Network (5-fold cross-validated for 720 fits and several hyper-parameters, see Table A1) </p>
+    <p> - The same 3 but using a logarithmic distribution of the target variable</p>
+    <p> - Random Forest (n_estimator of 100)</p>
+    <p>We aim to compare models based on their ability to minimize large prediction errors, we then use the RMSE which penalizes larger deviations. We then look at the top factors predicting the number of likes on TikTok of each model. </p>
+    <h2>Results</h2>
+    <h3>Model performance</h3>
+    <p>The Random Forest achieves the lowest test RMSE, followed by the Neural Network, while Linear and LASSO regressions perform similarly (see Table 1). However, the predictive performance of each model is not the primary focus of this study. In fact, what interests us is identifying which factors are most associated with TikTok success, using model coefficients and feature importances as analytical tools.</p>
+    <figure style="margin:20px 0;">
+      <img src="images/Capture d’écran 2026-05-20 à 17.59.50 2.png" style="width:100%; border-radius:8px; margin:20px 0;">
+      <figcaption style="font-size:12px; color:#888; margin-top:6px; text-align:center;">Table 1 – Summary of train and test RMSE across models.</figcaption>
+    </figure>
+    <p>The relatively high RMSE values across all models suggest that the number of likes is difficult to predict from the variables alone (not much feature engineering), which is itself informative. It suggests that viral success on TikTok is partly driven by factors not captured in our dataset, such as the creator's follower count or the video's content itself. </p>
+    <h3>Key predictors of TikTok success</h3>
+    <p>Rather than focusing on predictive accuracy, we use model coefficients and variable importances to understand which characteristics of a TikTok video are most associated with a high number of likes, which in this study is the sign of success.</p>
+    <p>From the LASSO regression, the regularization process forces irrelevant coefficients to exactly zero, providing a sparse and interpretable selection of predictors. The non-zero coefficients retained by the model indicate the variables that carry the most predictive signal. </p>
+    <p>From the Random Forest, feature importances reveal the variables that most reduce prediction error across all decision trees. The most important predictors are text_length, duration, hour, n_hashtags and day_of_week, suggesting that contextual and formal properties of a video matter more than the musical characteristics of the accompanying track (see Figure 2). We can also note that dimensional variables are present in this top but are not as predictive as other variables. The only information we have on the content creator is its status (verified or not verified) which is given by the variable author_verified is also not to be forgotten being the 6th most predictive of a TikTok success.</p>
+    <figure style="margin:20px 0;">
+      <img src="images/top coeffs.png" style="width:100%; border-radius:8px; margin:20px 0;">
+      <figcaption style="font-size:12px; color:#888; margin-top:6px; text-align:center;">Figure 2 – Top 15 feature importances from the Random Forest model.</figcaption>
+    </figure>
+    <p>These results converge to suggest several interpretable patterns :</p>
+    <p> - Publication timing (hour, day_of_week) consistently emerges as a significant predictor, consistent with the literature on optimal posting windows for social media engagement.</p>
+    <p> - Description length (text_length, n_hashtags) being in the top predictors is a striking finding — it may reflect that creators who invest in crafting longer, more elaborate descriptions tend to be more experienced or strategic creators overall.</p>
+    <p> - Video duration (duration) matters significantly, which aligns with TikTok's how algorithm works by favoring videos that maximize watch-through rate.</p>
+    <p> - Musical features such as popularity or music_original show comparatively lower importance, suggesting that the choice of soundtrack, still relevant, is secondary to the formal and temporal properties of the post itself.</p>
+    `
+  },
+  {
+    id: 6,
+    emoji: "🧬",
+    image : 'images/6.jpeg',
+    grad: "grad-9",
+    views: "743k",
+    pinned: false,
+    tags: ["#Economy"],
+    title: "The trend economy",
+    date: "30 avril 2025",
+    readTime: "11 min",
+    likes: "29k",
+    comments: "892",
+    body: `<h2>The overconsumption system of merch</h2>
+    <p>This fast-moving cycle has a catastrophic impact on our planet because it directly drives overconsumption. Today, when a trend goes viral on TikTok or Instagram, fast-fashion brands and internet creators rush to produce tons of cheap merchandise, often called "merch," to make money before the hype dies. Social media creates a lot of psychological pressure, making us feel like we need to buy these items immediately just to stay relevant. </p>
+    <p>The major problem is that this system turns everyday products into disposable items. Studies show that these trendy products are only worn or used an average of 7 to 10 times before being thrown away. Globally, this system creates 92 million tons of textile waste every single year. To make it simple, that is the exact equivalent of a garbage truck full of clothes being dumped into a landfill every second. In the end, trends teach us to consume constantly and treat everything as temporary garbage. </p>
+    <h2>The impact on musical industry</h2>
+    <p>Trends have also impacted the way we approach music. The scrolling format is quite particular, it has to be catchy, having a rhythm or a lyric that people can identify to, and more than anything, it has to be short. This format being the recipe of a well crafted hit, the melody often sticks with you the whole day long, resulting in you wanting to listen to the song. Some songs rapidly became really popular, cumulating sometimes millions of streams for a song that is known for a short part. The music industry is a huge business thus placing trending songs on top of their priorities, because trending music produces a lot of money and the music industry craves this kind of easy music.</p>
+    <p>However, this argument is not absolute, we need to be aware that those trending music often use really original, even slightly awkward sounds to produce engagement. It then led the musicians that were already using weird sounds to keep adding them, making TikTok music also a place for experimentation, that step out of the box of classic pop songs.</p>
+    <h2>Marketing reuse</h2>
+    <p>Some companies take advantage of social media trends to sell more products and attract even more customers. Everyone knows Duolingo, right? The brand became extremely popular on apps like TikTok because of its funny and chaotic marketing videos. They don't use traditional advertisements : the green bird follows online trends, memes, and viral music to create content that people want to share. This strategy is often called “trendjacking” or “culture marketing”.</p>
+    <p>Trendjacking means using a popular trend, joke, or event to promote a brand or a product. Companies try to react very quickly to what is happening online so they can stay relevant and visible. If a brand doesn't follow the trend they might be seen as no longer relevant and lose their audience. </p>
+    <p>When a trend becomes viral, brands join it before people lose interest. This allows them to reach millions of users without spending as much money on classic advertising. Nowadays, no one wants to watch obvious ads, people want to be entertained.  </p>`
+  },
+  {
+    id: 7,
+    emoji: "🏙️",
+    image : 'images/7.jpeg',
+    grad: "grad-5",
+    views: "1,8M",
+    pinned: false,
+    tags: ["#Politics", "#Co-opting"],
+    title: "Political co-opting of trends",
+    date: "8 avril 2025",
+    readTime: "8 min",
+    likes: "56k",
+    comments: "2,1k",
+    body: `<figure style="margin:20px 0;">
+              <img src="images/SR_25.09.25_tiktok-news_1.webp" style="width:100%; border-radius:8px; margin:20px 0;">
+              <figcaption style="font-size:12px; color:#888; margin-top:6px; text-align:center;">Pew Research Center, "Social Media as a News Source," Charting the rise of TikTok for news consumption among young adults.</figcaption>
+          </figure>
+    <p>Pew Research Center, "Social Media as a News Source," Charting the rise of TikTok for news consumption among young adults. </p>
+    <p>Finally, this phenomenon has moved beyond fashion and business, and it is now transforming the very nature of politics and modern democracy. We have entered an era of digital-first political communication, where campaign strategies are often built around internet algorithms rather than deep ideologies. This major shift is driven by a critical realization regarding younger generations, who simply do not consume traditional media anymore. Research shows that over seventy percent of “Gen Z” users get their primary news directly from social media platforms like TikTok and Instagram. Consequently, politicians who ignore these online spaces become completely invisible to an entire demographic of young voters. To stay relevant, political leaders have started aggressively using viral sounds, popular dance challenges, and Internet memes to look funny, human, and approachable. </p>
+    <p>However, this strategy can be as good as dangerous. </p>
+    <p>On the positive side, when these digital tactics are used well, they can genuinely increase civic engagement among youth. They break down traditional barriers, making complex or intimidating political topics feel simple and accessible, which can encourage young people to register to vote. </p>
+    <p>On the negative side, when it is used poorly, it creates massive "cringe" moments. If an older politician tries to copy a “Gen Z” trend incorrectly just to get views, young people instantly see through the act and feel like they are being manipulated by a corporate advertisement. Politics became a question of popularity and not really a question of opinion (but this criticism can be extended to politics outside of social media). </p>
+    <p>The much greater danger of this trend hijacking is that it heavily reduces the quality of democratic debates. Because of the way social media works, complex laws and international crises are being compressed into short, thirty-second humorous videos. Studies show that viral, trendy political videos get twice the engagement of serious ones, which forces politicians to prioritize short-term hype over long-term solutions. In the end, political campaigns risk becoming just another fast-moving internet trend, leaving voters with plenty of entertainment but very little understanding of the real issues.</p>`
+  },
+  {
+    id: 8,
+    emoji: "💸",
+    image : 'images/8.jpeg',
+    grad: "grad-3",
+    views: "3,7M",
+    pinned: false,
+    tags: ["#Skibidi", "#67"],
+    title: "What is the impact on mental health ?",
+    date: "18 février 2025",
+    readTime: "10 min",
+    likes: "89k",
+    comments: "3,4k",
+    body: `<p>Social media trends have a significant impact on both mental health and education, especially among teenagers. Adolescents are still developing emotionally and socially, they are more vulnerable to online influence. Scientific research shows that constant exposure to viral content can increase anxiety, stress, sleep problems, and low self-esteem. Teenagers often compare themselves to influencers or unrealistic lifestyles promoted online, which may affect their confidence and emotional well-being. </p>
+    <p>Social media trends also affect education and concentration. Many students spend several hours per day consuming short videos and viral content, which can reduce attention span and make studying more difficult. Researchers have found that excessive social media use is associated with lower academic performance and reduced motivation in school environments. </p>
+    <p>The real problem is the overconsumption of meaningless and addictive content associated with brain rot culture. Brain rot is a popular internet expression used to describe repetitive, fast, and low-quality content that keeps users scrolling for hours without real concentration. Next time you scroll try this : watch many videos in a row then try to remember what was the last video you have seen… It's not easy right ? And that's exactly what brain rot is and what it does to your mind. </p>`
+  },
+  {
+    id: 9,
+    emoji: "💸",
+    image : 'images/9.jpeg',
+    grad: "grad-3",
+    views: "3,7M",
+    pinned: false,
+    tags: ["#Health", "#Impact"],
+    title: "What is the impact on physical health ?",
+    date: "18 février 2025",
+    readTime: "10 min",
+    likes: "85k",
+    comments: "3,1k",
+    body: `<p>It has been established for a long time that TikTok, and more largely scrolling, can be really bad for your health. From drastically reducing mental capacities and attention span to perturbing your sleep schedule. On that notice, it is evident that trends could not be that good for your health since it comes from those same problems. One first example is the disappearance of agency : following the masses is a natural human habit and TikTok trends only amplified it. But this question seems more related to mental health than physical health.</p>
+    <p>To really talk about physical health, we therefore need to talk about the concepts of « challenges ». One very popular trend format is the concept of « challenge », you challenge people to do an action and it becomes viral so everyone starts feeling entitled to do it for the joke. Children and teenagers in particular have a really high digital engagement making them the first client for these challenges. However, some of those are real dangers. For example, à large number of trends comport an ophthalmologic risk : among them are the the "rubbing castor oil trend", "bleach/bright eye challenge", "mucus fishing challenge", "eggsplosions", "beezin challenge", "Orbeez challenge", "blow-drying eyelashes trend", "sun gazing," and "popping styes". That is why, we firmly need to be monitoring and regulating potentially dangerous content on social media platforms like TikTok to protect vulnerable young users and promote safe online engagement.</p>`
+  },
+  {
+    id: 10,
+    emoji: "⚡",
+    image : 'images/10.jpeg',
+    grad: "grad-8",
+    views: "2,9M",
+    pinned: false,
+    tags: ["#Source", "#TheEnd"],
+    title: "Bibliography",
+    date: "25 mars 2025",
+    readTime: "7 min",
+    likes: "67k",
+    comments: "1,8k",
+    body: `<h3>Institutional Reports and Publications</h3>
+
+    <p>Ellen MacArthur Foundation. (n.d.). <em>Global textile waste, landfill dumping rates, and fast-fashion durability</em>. Ellen MacArthur Foundation. <a href="https://www.ellenmacarthurfoundation.org">https://www.ellenmacarthurfoundation.org</a></p>
+
+    <p>United Nations Environment Programme (UNEP). (n.d.). <em>The lifecycle of clothing and modern consumption habits</em>. UNEP. <a href="https://www.unep.org">https://www.unep.org</a></p>
+
+    <h3>Academic Articles and Peer-Reviewed Journals</h3>
+
+    <p>Al Hassan, S., Bou Ghannam, A., &amp; Saade, J. S. (2024). An emerging ophthalmology challenge: A narrative review of TikTok trends impacting eye health among children and adolescents. <em>Ophthalmology and Therapy</em>, <em>13</em>, 885–903. <a href="https://doi.org/10.1007/s40123-024-00885-3">https://doi.org/10.1007/s40123-024-00885-3</a></p>
+
+    <p>Azagba, S., Ebling, T., &amp; Korkmaz, A. (2024). Social media use and mental health indicators among US adolescents: A population-based study. <em>Journal of Psychiatric Research</em>, <em>176</em>, 354–359. <a href="https://doi.org/10.1016/j.jpsychires.2024.06.043">https://doi.org/10.1016/j.jpsychires.2024.06.043</a></p>
+
+    <p>Harvard Kennedy School Misinformation Review. (n.d.). <em>Studies on engagement rates, algorithmic reach, and the impact of viral political content</em>. Harvard Kennedy School. <a href="https://misinforeview.hks.harvard.edu">https://misinforeview.hks.harvard.edu</a></p>
+
+    <h3>Surveys and Studies</h3>
+
+    <p>Pew Research Center. (n.d.). <em>Surveys and statistics on Gen Z news consumption patterns across social media networks</em>. Pew Research Center. <a href="https://www.pewresearch.org">https://www.pewresearch.org</a></p>
+
+    <h3>Press Articles, Blogs and Newsletters</h3>
+
+    <p>Bisou, L. (n.d.). <em>The psychology of trends: Why we love, adopt, and leave them</em> [Newsletter]. Meet the Art Director / Substack. <a href="https://meettheartdirector.substack.com/p/the-psychology-of-trends-why-we-love">https://meettheartdirector.substack.com/p/the-psychology-of-trends-why-we-love</a></p>
+
+    <p>Fazekas, K. (2024, May 15). <em>Marketing genius spotlight: Duolingo</em>. Boldog Digital. <a href="https://boldogdigital.ca/blog/marketing-genius-spotlight-duolingo/">https://boldogdigital.ca/blog/marketing-genius-spotlight-duolingo/</a></p>
+
+    <p>Team Lewis. (n.d.). <em>Trendjacking: How to ride a trending topic on social media</em>. Team Lewis Magazine. <a href="https://www.teamlewis.com/fr/magazine/le-trendjacking-ou-comment-surfer-sur-un-sujet-tendance-sur-les-reseaux/">https://www.teamlewis.com/fr/magazine/le-trendjacking-ou-comment-surfer-sur-un-sujet-tendance-sur-les-reseaux/</a></p>
+
+    <h3>Audiovisual Reports</h3>
+
+    <p>Weill, M. (n.d.). <em>Are we getting dumber?</em> [Television report]. TMC / TF1. <a href="https://www.tf1.fr/tmc/les-reportages-de-martin-weill-sommes-nous-de-plus-en-plus-cons/videos/les-reportages-de-martin-weill-sommes-nous-de-plus-en-plus-cons-partie-1-25472731.html">https://www.tf1.fr/tmc/les-reportages-de-martin-weill-[…]-partie-1-25472731.html</a></p>
+
+    <h3>Encyclopedias and Online Guides</h3>
+
+    <p>Library of Congress. (n.d.). <em>Tulip mania</em>. In <em>Business booms and busts research guide</em>. <a href="https://guides.loc.gov/business-booms-busts/tulip-mania">https://guides.loc.gov/business-booms-busts/tulip-mania</a></p>
+
+    <p>Wikipedia. (n.d.). <em>Brain rot</em>. In <em>Wikipedia, the free encyclopedia</em>. <a href="https://en.wikipedia.org/wiki/Brain_rot">https://en.wikipedia.org/wiki/Brain_rot</a></p>`
+  }
+];
+
+function renderGrid() {
+  const grid = document.getElementById('video-grid');
+  grid.innerHTML = videos.map(v => `
+    <div class="video-card" onclick="openArticle(${v.id})">
+      <img class="card-thumb" src="${v.image}" alt="${v.title}">
+      ${v.pinned ? '<div class="card-pinned">ÉPINGLÉ</div>' : ''}
+      <div class="card-views-bottom">${v.views}</div>
+      <div class="card-overlay">
+        <div class="card-play"></div>
+        <div class="card-views">${v.views} vues</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openArticle(id) {
+  const v = videos.find(x => x.id === id);
+  if (!v) return;
+
+  document.getElementById('article-content').innerHTML = `
+    
+
+    <div class="article-tags">
+      ${v.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+    </div>
+
+    <h1 class="article-title">${v.title}</h1>
+
+    <div class="article-meta">
+      <div class="meta-avatar"> </div>
+      <div class="meta-text">
+        <div class="meta-author">@What_is_a_trend</div>
+        <div class="meta-date">${v.date}</div>
+      </div>
+      <div class="meta-stats">
+        <span class="meta-stat">♥ ${v.likes}</span>
+        <span class="meta-stat">💬 ${v.comments}</span>
+      </div>
+    </div>
+
+    <div class="article-body">${v.body}</div>
+
+    <div class="share-row">
+      <button class="share-btn">📋 Copier le lien</button>
+      <button class="share-btn">💬 Partager</button>
+      <button class="share-btn primary">🤍 Liker</button>
+    </div>
+  `;
+
+  document.getElementById('profile-page').classList.remove('active');
+  document.getElementById('article-page').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome() {
+  document.getElementById('article-page').classList.remove('active');
+  document.getElementById('profile-page').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderGrid();
+</script>
+</body>
+</html>
